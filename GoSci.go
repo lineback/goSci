@@ -1,6 +1,14 @@
 package GoSci
 
-import "fmt"
+/*
+  #cgo LDFLAGS: -lblas
+  #include <atlas/cblas.h>
+*/
+import 	"C"
+import(
+	"fmt"
+	"unsafe"
+)
 
 type GsArray struct {
 	data        []float64
@@ -54,6 +62,12 @@ func (array *GsArray) Reshape(shape ... int) {
 	array.shape = shape
 }
 
+func (array *GsArray) PrintShape(){
+	for _,value := range array.shape {
+		fmt.Println(value)
+	}
+}
+
 func (array *GsArray) Print() {
 	for _, value := range array.data {
 		fmt.Println(value)
@@ -104,4 +118,59 @@ func (array *GsArray) Get(pos ... int) float64 {
 		idx += prod[i] * pos[i]
 	}
 	return array.data[idx]
+}
+
+func Dot(x, y *GsArray) float64 {
+	if len(x.shape) > 2  || len(y.shape) > 2 {
+		panic("Invalid dimension for dot product!!")
+	}
+	if len(x.shape) == 2 && len(y.shape) == 2 {
+		if x.shape[0] != 1 && x.shape[1] != 1 {
+			if y.shape[0] != 1 && y.shape[1] != 1 {
+				panic("Invalid dimension for dot product!!")
+			}
+		}
+	}else if len(x.shape) == 1 && len(y.shape) == 2 {
+		if (y.shape[0] != 1) && (y.shape[1] != 1) {
+			panic("Invalid dimension for dot product!!")
+		}
+	} else if (len(x.shape) == 2 && len(y.shape) == 1) {
+		if (x.shape[0] != 1) && (x.shape[1] != 1) {
+			panic("Invalid dimension for dot product!!")
+		}
+	}
+	c_N:= C.int(len(x.data))
+	c_x := (*C.double)(unsafe.Pointer(&x.data[0]))
+	c_incX := C.int(1)
+	c_y := (*C.double)(unsafe.Pointer(&y.data[0]))
+	c_incY := C.int(1)
+	
+	return float64(C.cblas_ddot(c_N, c_x, c_incX, c_y, c_incY))
+}
+
+func MatMult(x, y *GsArray) *GsArray {
+	if len(x.shape) != 2 || len(y.shape) != 2 {
+		panic("Arrays must have dimension 2 for matrix multiply")
+	}
+	if x.shape[1] != y.shape[0] {
+		panic("Invalid dimensions for matrix multiply")
+	}
+	c_M := C.int(x.shape[0])
+	c_N := C.int(y.shape[1])
+	c_K := C.int(x.shape[1])
+	c_Lda := c_K
+	c_Ldb := c_M
+	c_Ldc := c_N
+	c_alpha := C.double(1.0)
+	c_beta := C.double(1.0)
+	
+	c_x := (*C.double)(unsafe.Pointer(&x.data[0]))
+	c_y := (*C.double)(unsafe.Pointer(&y.data[0]))
+	
+	z := Zeros(x.shape[0], y.shape[1])
+	c_z := (*C.double)(unsafe.Pointer(&(z.data[0])))
+	
+	C.cblas_dgemm(101, 111, 111, c_M, c_N, c_K, c_alpha, c_x, c_Lda, c_y, c_Ldb, c_beta, c_z, c_Ldc)
+	
+	return z
 }
