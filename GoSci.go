@@ -52,6 +52,14 @@ func Arange(size int) *GsArray {
 	return array
 }
 
+func Eye(size int) *GsArray {
+	array := Zeros(size,size)
+	for i := 0; i < size; i++ {
+		array.data[i*size + i] = float64(1)
+	}
+	return array
+}
+
 func (array *GsArray) Reshape(shape ... int) {
 	product := 1
 	for _, value := range shape {
