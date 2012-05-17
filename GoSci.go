@@ -9,6 +9,7 @@ import(
 	"fmt"
 	"unsafe"
 )
+import "math"
 
 type GsArray struct {
 	data        []float64
@@ -74,7 +75,7 @@ func (array *GsArray) Print() {
 	}
 }
 
-func (array *GsArray) Put(val float64, pos ... int) {
+func (array *GsArray) Put(val float64, pos []int) {
 	if len(array.shape) != len(pos){
 		panic("Invalid posistion!")
 	}
@@ -97,7 +98,7 @@ func (array *GsArray) Put(val float64, pos ... int) {
 	}
 }
 
-func (array *GsArray) Get(pos ... int) float64 {
+func (array *GsArray) Get(pos []int) float64 {
 	if len(array.shape) != len(pos){
 		panic("Invalid posistion!")
 	}
@@ -166,11 +167,58 @@ func MatMult(x, y *GsArray) *GsArray {
 	
 	c_x := (*C.double)(unsafe.Pointer(&x.data[0]))
 	c_y := (*C.double)(unsafe.Pointer(&y.data[0]))
-	
-	z := Zeros(x.shape[0], y.shape[1])
+	z := Zeros(x.shape[0],y.shape[1])
 	c_z := (*C.double)(unsafe.Pointer(&(z.data[0])))
 	
 	C.cblas_dgemm(101, 111, 111, c_M, c_N, c_K, c_alpha, c_x, c_Lda, c_y, c_Ldb, c_beta, c_z, c_Ldc)
 	
 	return z
+}
+
+func Add(x, y *GsArray) *GsArray {
+	result := Zeros(x.shape ...)
+	for i := 0; i < len(x.data) ; i++ {
+		result.data[i] = x.data[i] + y.data[i]
+	}
+	return result
+}
+
+func Minus(x, y *GsArray) *GsArray {
+	result := Zeros(x.shape ...)
+	for i := 0; i < len(x.data) ; i++ {
+		result.data[i] = x.data[i] - y.data[i]
+	}
+	return result
+}
+
+func ScalarMult(x *GsArray, a float64) *GsArray {
+	result := Zeros(x.shape ...)
+	for i := 0; i < len(x.data) ; i++ {
+		result.data[i] = x.data[i]*a 
+	}
+	return result
+}
+
+func Sum(x *GsArray) float64 {
+	sum := float64(0)
+	for _,val := range x.data {
+		sum += val
+	}
+	return sum
+}
+
+func Mean(x *GsArray) float64 {
+	sum := Sum(x)
+	return sum/float64(len(x.data))
+}
+
+func Stdev(x *GsArray) float64 {
+	mean := Mean(x)
+	meanArray := ScalarMult(Ones(len(x.data)), mean)
+	shape := x.shape
+	x.Reshape(len(x.data))
+	diff := Minus(x, meanArray)
+	std := math.Sqrt(Dot(diff, diff)/float64(len(x.data)))
+	x.Reshape(shape ...)
+	return std
 }
