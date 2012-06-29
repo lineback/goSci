@@ -17,3 +17,7 @@ func GradientDescent(minObj FuncGrad, start []float64, maxIter int, lr float64) 
 	}
 	return minObj.Feval(currBest), currBest
 }
+
+func BFGS(minObj FuncGrad) (float64, []float64){
+	return 0.0, []float64 {0.0}
+}

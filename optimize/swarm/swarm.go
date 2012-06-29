@@ -1,4 +1,4 @@
-package Swarm
+package swarm
 
 import (
 	"math/rand"

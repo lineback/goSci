@@ -1,4 +1,4 @@
-package GA
+package genetic
 import (
 	"math/rand"
 	"math"

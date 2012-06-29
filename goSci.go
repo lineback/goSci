@@ -1,13 +1,14 @@
-package GoSci
+package goSci
 
 /*
   #cgo LDFLAGS: -lblas
   #include <atlas/cblas.h>
 */
 import 	"C"
-import(
-	"fmt"
-	"unsafe"
+import(	
+	 "fmt"
+         "unsafe"
+         "bytes"
 )
 import "math"
 
@@ -16,6 +17,9 @@ type GsArray struct {
 	shape       []int
 }
 
+/*
+ Creates a GsArray with shape defined by shape initialized to zero
+*/
 func Zeros(shape ... int) *GsArray {
 	product := 1
 	for _, value := range shape {
@@ -27,6 +31,9 @@ func Zeros(shape ... int) *GsArray {
 	return array
 }
 
+/*
+ Creates a GsArray with shape defined by shape intialized to ones
+*/
 func Ones(shape ... int) *GsArray {
 	product := 1
 	for _, value := range shape {
@@ -41,6 +48,9 @@ func Ones(shape ... int) *GsArray {
 	return array
 }
 
+/*
+ Creates a one dimensional GsArray with the range 0 to size -1
+*/
 func Arange(size int) *GsArray {
 	array := new(GsArray)
 	array.shape = make([]int, 1) 
@@ -52,6 +62,9 @@ func Arange(size int) *GsArray {
 	return array
 }
 
+/*
+ Creates an identity matrix of size size
+*/
 func Eye(size int) *GsArray {
 	array := Zeros(size,size)
 	for i := 0; i < size; i++ {
@@ -60,6 +73,9 @@ func Eye(size int) *GsArray {
 	return array
 }
 
+/*
+ Reshapes array to new shape. The product of shape must be the same as product of old shape.
+*/
 func (array *GsArray) Reshape(shape ... int) {
 	product := 1
 	for _, value := range shape {
@@ -70,6 +86,7 @@ func (array *GsArray) Reshape(shape ... int) {
 	}
 	array.shape = shape
 }
+
 
 func (array *GsArray) PrintShape(){
 	for _,value := range array.shape {
@@ -229,4 +246,18 @@ func Stdev(x *GsArray) float64 {
 	std := math.Sqrt(Dot(diff, diff)/float64(len(x.data)))
 	x.Reshape(shape ...)
 	return std
+}
+
+func (array *GsArray) String() string {
+	if len(array.shape) > 2 {
+		return "I only print arrays with dimension less than 2."
+	}
+	buff := bytes.NewBufferString("")
+	for i:=0; i<len(array.data); i++ {
+		if i % array.shape[1] == 0 && i != 0 {
+			fmt.Fprint(buff, "\n")
+		}
+		fmt.Fprintf(buff, "%f ", array.data[i])
+	}
+	return buff.String()
 }
