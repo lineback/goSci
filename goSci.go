@@ -99,7 +99,12 @@ func (array *GsArray) Print() {
 		fmt.Println(value)
 	}
 }
-
+/*
+ Puts val into postion given by pos. 
+ e.g. 
+ array.Put(1.5, 4, 3)
+ would put 1.5 into row 4 column 3
+*/
 func (array *GsArray) Put(val float64, pos []int) {
 	if len(array.shape) != len(pos){
 		panic("Invalid posistion!")
