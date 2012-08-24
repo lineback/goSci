@@ -1,3 +1,6 @@
+/*
+ Generic particle swarm optimization package
+*/
 package swarm
 
 import (
@@ -5,12 +8,12 @@ import (
 	"math"
 	"time"
 )
-		
+// Bounds for one dimension of the solution space		
 type Bound struct {
 	Lower   float64
 	Upper   float64
 }
-
+// Encapsulates the swarm
 type Swarm struct {
 	dim           int        //dimension of the system
 	np            int        //number of particles
@@ -31,7 +34,13 @@ type Swarm struct {
 	ring          bool       //use ring lattice
 	bounds        []Bound    //bounds of search
 }
-
+/*
+Creates a new swarm where:
+  np is the number of particles
+  dim is dimension of the solution space
+  fit is the objective function to be maximized
+  bounds gives the initial bounds for the search in the solution space
+*/
 func NewSwarm(np int, dim int, fit func([]float64) float64, bounds []Bound) *Swarm {
 	swarm := new(Swarm)
 	swarm.dim = dim
@@ -56,12 +65,14 @@ func NewSwarm(np int, dim int, fit func([]float64) float64, bounds []Bound) *Swa
 	rand.Seed(now.Unix())
 	return swarm
 }
-
-func (swarm *Swarm) Init(){
+/*
+ Initializes the swarm positions with a random seed so results can be reproduced
+*/
+func (swarm *Swarm) Init(seed int64){
 	
 	var boundSize float64
 	var lower float64
-
+	rand.Seed(seed)
 	for i := 0; i < swarm.np; i++ {
 		for j := 0; j < swarm.dim; j++ {
 			boundSize = (swarm.bounds[j]).Upper - (swarm.bounds[j]).Lower
@@ -154,39 +165,53 @@ func (swarm *Swarm) updatePosition(){
 		swarm.position[i] += swarm.velocity[i]
 	}
 }
-
+/*
+ Updates the swarm
+*/
 func (swarm *Swarm) Update(){
 	swarm.calcFitness()
 	swarm.updateVelocity()
 	swarm.updatePosition()
 }
-
+/*
+ Returns the best particle in the swarm and its fitness
+*/
 func (swarm *Swarm) GetBest() ([]float64, float64) {
 	start := swarm.dim*swarm.gbestIdx
 	end := start + swarm.dim
 	return swarm.best_pos[start:end], swarm.gbest
 }
-
+/*
+ Optimize the swarm using iterations and return the best particle and its fitness
+*/
 func (swarm *Swarm) Optimize(iterations int) ([]float64, float64) {
 	for i := 0; i < iterations; i++ {
 		swarm.Update()
 	}
 	return swarm.GetBest()
 }
-
+/*
+Set the radius of the ring topology, default is to use global best
+*/
 func (swarm *Swarm) SetRadius(radius int){
 	swarm.radius = radius
 	swarm.ring = true
 }
-
+/*
+Set the cognitive parameter, default is 2.0
+*/
 func (swarm *Swarm) SetCog(cog float64){
 	swarm.cog = cog
 }
-
+/*
+Set the social parameter, default is 2.0
+*/
 func (swarm *Swarm) SetSoc(soc float64){
 	swarm.soc = soc
 }
-
+/*
+Set the maximum velocity, default is 1.0
+*/
 func (swarm *Swarm) SetVmax(v_max float64){
 	swarm.v_max = v_max
 }

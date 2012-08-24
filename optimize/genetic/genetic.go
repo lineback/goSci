@@ -1,8 +1,12 @@
+/*
+ Tools for a generic genetic algorithm in which the genes can be encoded as bit strings
+*/
 package genetic
 import (
 	"math/rand"
 	"math"
 )
+// encapsulates the ga population
 type GA struct {
 	length     int       //length of the bit strings
 	num        int       //number of individuals
@@ -13,7 +17,12 @@ type GA struct {
 	cumSum     []float64 //cummulative sum for crossover
 	fitFunc    func([]bool) float64 //fitness function
 }
-
+/* 
+ Creates a new ga with where:
+           Each individual is a bit string of length length.
+           The population consists of num individuals.
+           The fitness of each individual is calculated using fitFunc  
+*/
 func NewGA(length int, num int, fitFunc func([]bool) float64) (*GA){
 	ga := new(GA)
 	ga.length = length
@@ -27,7 +36,9 @@ func NewGA(length int, num int, fitFunc func([]bool) float64) (*GA){
 	
 	return ga
 } 
-
+/*
+ Initializes the value using an integer seed so runs can be reproduced
+*/
 func (ga *GA) Init(seed int64) {
 	rand.Seed(seed)
 	for i:=0; i < len(ga.population); i++ {
@@ -54,11 +65,15 @@ func (ga *GA) calcFitness() {
 		ga.cumSum[i] = ga.cumSum[i] / ga.cumSum[ga.length -1]
 	}
 }
-
+/*
+ Sets crossover probability
+*/
 func (ga *GA) SetCrossover(cp float64) {
 	ga.cp = cp
 }
-
+/*
+ Sets mutation probability
+*/
 func (ga *GA) SetMutation(mp float64) {
 	ga.mp = mp
 }
@@ -106,7 +121,9 @@ func (ga *GA) crossover(idxa int , idxb int) ([]bool, []bool){
 
 	return newA, newB
 }
-
+/*
+ Creates the next generation from the current population
+*/
 func (ga *GA) CreateNextGen() {
 	ga.calcFitness()
 	
@@ -142,7 +159,9 @@ func (ga *GA) CreateNextGen() {
 	}
 	copy(ga.population, nextPop)
 }
-
+/*
+ Returns the best individual from the population, and its fitness
+*/
 func (ga *GA) GetBest() (float64, []bool) {
 	ga.calcFitness()
 	bestIdx := 0
@@ -155,10 +174,11 @@ func (ga *GA) GetBest() (float64, []bool) {
 	}
 	return best, ga.population[bestIdx*ga.length:(bestIdx+1)*ga.length]
 }
-
+/*
+ Returns the average fitness of the population
+*/
 func (ga *GA) GetAveFitness() float64 {
 	retVal := float64(0)
-
 	for _,val := range ga.fitness {
 		retVal += val
 	}
