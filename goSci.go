@@ -8,7 +8,6 @@ import 	"C"
 import(	
 	 "fmt"
          "unsafe"
-         "bytes"
 )
 import "math"
 
@@ -105,7 +104,7 @@ func (array *GsArray) Print() {
  array.Put(1.5, 4, 3)
  would put 1.5 into row 4 column 3
 */
-func (array *GsArray) Put(val float64, pos []int) {
+func (array *GsArray) Put(val float64, pos ... int) {
 	if len(array.shape) != len(pos){
 		panic("Invalid posistion!")
 	}
@@ -130,7 +129,7 @@ func (array *GsArray) Put(val float64, pos []int) {
 /*
  returns value of value at postion pos
 */
-func (array *GsArray) Get(pos []int) float64 {
+func (array *GsArray) Get(pos ... int) float64 {
 	if len(array.shape) != len(pos){
 		panic("Invalid posistion!")
 	}
@@ -298,21 +297,4 @@ func Stdev(x *GsArray) float64 {
 	std := math.Sqrt(Dot(diff, diff)/float64(len(x.data)))
 	x.Reshape(shape ...)
 	return std
-}
-/*
- Stringer function for printing the arrays.
- Only prints arrays of dimension two or less
-*/
-func (array *GsArray) String() string {
-	if len(array.shape) > 2 {
-		return "I only print arrays with dimension less than 2."
-	}
-	buff := bytes.NewBufferString("")
-	for i:=0; i<len(array.data); i++ {
-		if i % array.shape[1] == 0 && i != 0 {
-			fmt.Fprint(buff, "\n")
-		}
-		fmt.Fprintf(buff, "%f ", array.data[i])
-	}
-	return buff.String()
 }
