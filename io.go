@@ -93,7 +93,6 @@ func (array *GsArray) WriteTable(fileName string, delim string) error {
 		}
 		fmt.Fprintf(buff, "%f", array.data[i])
 	}
-	fmt.Println(buff.String())
 	w := bufio.NewWriter(file)
 	_, err = w.WriteString(buff.String())
 	if err != nil{
@@ -104,4 +103,4 @@ func (array *GsArray) WriteTable(fileName string, delim string) error {
 	}
 	return nil
 }
-//}
+
