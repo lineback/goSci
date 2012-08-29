@@ -24,27 +24,19 @@ func Mean(x *GsArray, meanType uint) *GsArray {
 */
 func Stdev(x *GsArray, stdevType uint) *GsArray {
 	mean := Mean(x, stdevType)
+	var meanArray *GsArray
 	switch stdevType {
 	case ALL:
-		meanArray := Repmat(mean, x.shape[0], x.shape[1])
-		diff := Minus(x, meanArray)
-		diffSquared := ElemTimes(diff, diff)
-		meanDiff := Mean(diffSquared, ALL)
-		return ArrayFun(meanDiff, math.Sqrt)
+		meanArray = Repmat(mean, x.shape[0], x.shape[1])
 	case COLS:
-		meanArray := Repmat(mean, x.shape[0], 1)
-		diff := Minus(x, meanArray)
-		diffSquared := ElemTimes(diff, diff)
-		meanDiff := Mean(diffSquared, COLS)
-		return ArrayFun(meanDiff, math.Sqrt)
+		meanArray = Repmat(mean, x.shape[0], 1)
 	case ROWS:
-		meanArray := Repmat(mean, 1, x.shape[1])
-		diff := Minus(x, meanArray)
-		diffSquared := ElemTimes(diff, diff)
-		meanDiff := Mean(diffSquared, ROWS)
-		return ArrayFun(meanDiff, math.Sqrt)
+		meanArray = Repmat(mean, 1, x.shape[1])
 	default:
 		panic("Invalid stdev type.")
 	}
-	return new(GsArray)
+	diff := Minus(x, meanArray)
+	diffSquared := ElemTimes(diff, diff)
+	meanDiff := Mean(diffSquared, stdevType)
+	return ArrayFun(meanDiff, math.Sqrt)
 }
