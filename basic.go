@@ -180,6 +180,27 @@ func (x *GsArray) TimesEquals(a float64) {
 	}	
 }
 /*
+ Returns element wise multiplication of x and y
+*/
+func ElemTimes(x, y *GsArray) *GsArray {
+	if len(x.data) != len(y.data){
+		panic("Arrays must have the same shape!!")
+	}
+	if len(x.shape) != len(y.shape){
+		panic("Arrays must have the same shape!!")
+	}
+	for i := 0; i < len(x.shape); i++{
+		if x.shape[i] != y.shape[i]{
+			panic("Arrays must have the same shape!!")
+		}
+	}
+	result := Zeros(x.shape ...)
+	for i := 0; i < len(x.data) ; i++ {
+		result.data[i] = x.data[i] * y.data[i]
+	}
+	return result
+}
+/*
  Returns the sum of all of the elements in the array
 */
 func Sum(x *GsArray, sumType uint) *GsArray{
@@ -202,7 +223,7 @@ func Sum(x *GsArray, sumType uint) *GsArray{
 		if len(x.shape) < 2 {
 			return Sum(x, ALL)
 		}
-		sum := Zeros(1, x.shape[0])
+		sum := Zeros(x.shape[0],1)
 		for i, val := range x.data {
 			sum.data[i/x.shape[1]] += val
 		}
@@ -211,4 +232,40 @@ func Sum(x *GsArray, sumType uint) *GsArray{
 		panic ("Invalid sum type")
 	}
 	return Zeros(x.shape ...)
+}
+/*
+Returns a rep1Xrep2 tiling of x,  x must be a vector or matrix
+*/
+func Repmat(x *GsArray, rep1, rep2 int) *GsArray {
+	var dim1, dim2, x1, x2 int
+	if len(x.shape) > 2 {
+		panic("Shape of input array is invalid for Repmat")
+	}
+	x1 = x.shape[0]
+	dim1 = x1 * rep1
+	if len(x.shape) == 2 {
+		x2 = x.shape[1]
+		dim2 = x2 * rep2
+	} else {
+		x2 = 1
+		dim2 = rep2
+	}
+	returnArray := Zeros(dim1, dim2)
+	for i := 0; i < dim1; i++ {
+		origIdx := i%x1
+		for j := 0; j < dim2; j++ {
+			returnArray.Put(x.Get(origIdx, j%x2), i,j)
+		}
+	}
+	return returnArray
+}
+/*
+ Applies someFunc to every element of an array and returns the new array
+*/
+func ArrayFun(x *GsArray, someFunc func(float64) float64) *GsArray {
+	returnArray := Zeros(x.shape ...)
+	for i, val := range x.data {
+		returnArray.data[i] = someFunc(val)
+	}
+	return returnArray
 }

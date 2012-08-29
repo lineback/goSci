@@ -1,6 +1,5 @@
 package goSci
 
-import "math"
 
 type GsArray struct {
 	data        []float64
@@ -136,23 +135,3 @@ func (array *GsArray) Get(pos ... int) float64 {
 	return array.data[idx]
 }
 
-/*
- Returns the mean of the array
-*/
-func Mean(x *GsArray) float64 {
-	sum := Sum(x, ALL)
-	return sum.data[0]/float64(len(x.data))
-}
-/*
- Returns the standard deviation of the array
-*/
-func Stdev(x *GsArray) float64 {
-	mean := Mean(x)
-	meanArray := Times(Ones(len(x.data)), mean)
-	shape := x.shape
-	x.Reshape(len(x.data))
-	diff := Minus(x, meanArray)
-	std := math.Sqrt(Dot(diff, diff)/float64(len(x.data)))
-	x.Reshape(shape ...)
-	return std
-}
