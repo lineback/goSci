@@ -269,3 +269,65 @@ func ArrayFun(x *GsArray, someFunc func(float64) float64) *GsArray {
 	}
 	return returnArray
 }
+
+/*
+Returns the concatenation of two GsArrays along the specified dimension, eg
+if x = [ 1, 4
+         7, 8]
+and 
+   y = [ 6, 5 
+         2, 3]
+Then Cat(x,y, goSci.ROWS) = [1, 4, 6, 5
+                             7, 8, 2, 3]
+and 
+     Cat(x,y, goSci.COLS) = [1, 4
+                             7, 8
+                             6, 5
+                             2, 3]
+*/
+func Cat(x,y *GsArray, catType uint) *GsArray {
+	if len(x.shape) > 2 || len(y.shape) > 2 {
+		panic("Both arrays must have dimension less than 3 to concatenate.")
+	}
+	var colsx, colsy int
+	var returnArray *GsArray
+	rowsx := x.shape[0]
+	rowsy := y.shape[0]
+	if len(x.shape) == 1 {
+		colsx = 1
+	} else {
+		colsx = x.shape[1]
+	}
+	if len(y.shape) == 1 {
+		colsy = 1
+	} else {
+		colsy = y.shape[1]
+	}
+	switch catType {
+	case COLS:
+		if colsx != colsy {
+			panic("Arrays must have the same number of columns.")
+		}
+		returnArray = Zeros(rowsx + rowsy, colsx)
+		copy(returnArray.data[0:len(x.data)], x.data)
+		copy(returnArray.data[len(x.data):], y.data)
+	case ROWS:
+		if rowsx != rowsy {
+			panic("Arrays must have the same number of rows.")
+		}
+		returnArray = Zeros(rowsx, colsx + colsy)
+		xpos, ypos := 0, 0
+		for i := 0; i < len(returnArray.data); i++ {
+			if i%(colsx + colsy) < colsx {
+				returnArray.data[i] = x.data[xpos]
+				xpos++
+			} else {
+				returnArray.data[i] = y.data[ypos]
+				ypos++
+			}
+		}
+	default:
+		panic("Invalid cat type use goSci.ROWS or goSci.COLS.")
+	}
+	return returnArray
+}
